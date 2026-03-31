@@ -18,7 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # importante para poder criar e pushar tags
+          fetch-depth: 0   # muito importante para poder criar tags
 
       - name: Criar tag homolog
         run: |
