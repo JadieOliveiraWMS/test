@@ -1,0 +1,59 @@
+name: 🔴 Promote to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Versão homolog (ex: 1.2.3)"
+        required: true
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: wms-web
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    environment:
+      name: production
+
+    steps:
+      - name: Login no registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.REGISTRY_USER }}
+          password: ${{ secrets.GH_TOKEN }}
+
+      - name: Pull imagem homolog
+        run: |
+          docker pull ${{ env.REGISTRY }}/${{ secrets.REGISTRY_USER }}/${{ env.IMAGE_NAME }}:h-${{ inputs.version }}
+
+      - name: Retag produção
+        run: |
+          docker tag \
+          ${{ env.REGISTRY }}/${{ secrets.REGISTRY_USER }}/${{ env.IMAGE_NAME }}:h-${{ inputs.version }} \
+          ${{ env.REGISTRY }}/${{ secrets.REGISTRY_USER }}/${{ env.IMAGE_NAME }}:v${{ inputs.version }}
+
+      - name: Push produção
+        run: |
+          docker push ${{ env.REGISTRY }}/${{ secrets.REGISTRY_USER }}/${{ env.IMAGE_NAME }}:v${{ inputs.version }}
+
+      - name: Criar tag git produção
+        run: |
+          git init
+          git remote add origin https://github.com/${{ github.repository }}.git
+          git fetch origin main
+
+          git checkout main
+
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+
+          git tag v${{ inputs.version }}
+          git push origin v${{ inputs.version }}
+
+      - name: Deploy produção
+        run: |
+          echo "Deployando versão v${{ inputs.version }} em produção"
