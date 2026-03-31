@@ -25,7 +25,12 @@ jobs:
         run: npm run lint --if-present
 
       - name: Test
-        run: npm test --if-present
+        run: |
+          if grep -q '"test":' package.json; then
+            npm test
+          else
+            echo "Nenhum teste definido, pulando etapa."
+          fi
 
       - name: Build
         run: npm run build
