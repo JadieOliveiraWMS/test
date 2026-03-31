@@ -23,7 +23,7 @@ jobs:
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git tag h-${{ inputs.version }}
-          git push origin h-${{ inputs.version }}
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git h-${{ inputs.version }}
 
       - name: Login no registry
         uses: docker/login-action@v3
