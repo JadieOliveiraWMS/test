@@ -7,39 +7,24 @@ on:
         description: "Versão (ex: 1.2.3)"
         required: true
 
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: wms-web
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout completo para permitir criar tags
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # muito importante para poder criar tags
+          fetch-depth: 0
 
+      # Criar e pushar tag homolog
       - name: Criar tag homolog
         run: |
+          echo "Criando tag h-${{ inputs.version }}"
           git tag h-${{ inputs.version }}
           git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git h-${{ inputs.version }}
 
-      - name: Login no registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ secrets.REGISTRY_USER }}
-          password: ${{ secrets.GH_TOKEN }}
-
-      - name: Build imagem
-        run: |
-          docker build -t ${{ env.REGISTRY }}/${{ secrets.REGISTRY_USER }}/${{ env.IMAGE_NAME }}:h-${{ inputs.version }} .
-
-      - name: Push imagem
-        run: |
-          docker push ${{ env.REGISTRY }}/${{ secrets.REGISTRY_USER }}/${{ env.IMAGE_NAME }}:h-${{ inputs.version }}
-
+      # Deploy simulado (ou você pode colocar seus comandos de deploy reais depois)
       - name: Deploy homolog
         run: |
           echo "Deployando versão h-${{ inputs.version }} em homolog"
